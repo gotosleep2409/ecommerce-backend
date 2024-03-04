@@ -17,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.servlet.Filter;
 
 @SuppressWarnings("deprecation")
 @Configuration
@@ -50,19 +49,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
                 .cors()
                 .and()
                 .authorizeRequests()
+                .antMatchers("/users/register").permitAll()
                 .antMatchers("/users/login").permitAll()
                 .antMatchers("/products/**").permitAll()
                 .antMatchers("/categories/**").permitAll()
-                .antMatchers("/gpt-users/login").permitAll()
+                .antMatchers("/users/**").permitAll()
                 .antMatchers(HttpMethod.POST,"/users").permitAll()
-                .antMatchers("/users/reset-password").permitAll()
-                .antMatchers("/users/help").permitAll()
                 .antMatchers("/image/**").permitAll()
                 .antMatchers("/image**").permitAll()
                 .anyRequest().authenticated();
 
         http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
-
     }
 
 }

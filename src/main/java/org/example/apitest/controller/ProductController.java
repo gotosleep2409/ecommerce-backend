@@ -4,12 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.apitest.exception.ApiException;
 import org.example.apitest.helper.ResponseBuilder;
-import org.example.apitest.model.Category;
 import org.example.apitest.model.Product;
 import org.example.apitest.model.request.ProductRequest;
-import org.example.apitest.service.CategoriesService;
 import org.example.apitest.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,5 +46,6 @@ public class ProductController {
         productService.deleteProduct(id);
         return ResponseEntity.ok(ResponseBuilder.buildResponse(true, "Delete Product successfully", HttpStatus.OK));
     }
+
     
 }

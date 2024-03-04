@@ -31,7 +31,7 @@ public class ProductService {
     public Product createProduct(ProductRequest request) throws ApiException {
         List<Category> categories = categoriesRepository.getApeCategoriesByIdIn(request.getCategories());
         if (categories.isEmpty()) {
-            throw new ApiException("Not found apeCategories");
+            throw new ApiException("Not found Categories");
         }
         Product productToCreate = new Product(request.getName(),request.getCreator() , request.getDescription(),request.getDetail(), request.getImageUrl(), request.getPrice(), request.getQuantity(), request.getPriceSale(), categories);
         return productRepository.save(productToCreate);
@@ -47,7 +47,7 @@ public class ProductService {
         Product productToUpdate = productExisted.get();
         List<Category> categories = categoriesRepository.getApeCategoriesByIdIn(request.getCategories());
         if (categories.size() == 0) {
-            throw new ApiException("Not found apeCategories with apeCategoryIds body request");
+            throw new ApiException("Not found Categories with CategoryIds body request");
         }
         Product productRequest = new Product(request.getName(),request.getCreator() , request.getDescription(),request.getDetail(), request.getImageUrl(), request.getPrice(), request.getQuantity(), request.getPriceSale(), categories);
         BeanUtilsAdvanced.copyProperties(productRequest, productToUpdate);
@@ -60,7 +60,14 @@ public class ProductService {
             throw new ApiException("Not found with id=" + id);
         }
         productRepository.delete(productExisted.get());
-
     }
 
+    public Page<Product> getProductByCategoryId(long id,int page, int size) throws ApiException{
+        Optional<Category> categoryOptional = categoriesRepository.findById(id);
+        PageRequest paging = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
+        if (!categoryOptional.isPresent()) {
+            throw new ApiException("Category not found");
+        }
+        return productRepository.findByCategories(categoryOptional, paging);
+    }
 }

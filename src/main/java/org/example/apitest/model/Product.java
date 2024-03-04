@@ -1,5 +1,4 @@
 package org.example.apitest.model;
-
 import lombok.*;
 
 import javax.persistence.*;

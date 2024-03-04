@@ -4,9 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.example.apitest.exception.ApiException;
 import org.example.apitest.helper.ResponseBuilder;
 import org.example.apitest.model.Category;
+import org.example.apitest.model.Product;
 import org.example.apitest.model.request.CategoriesRequest;
 import org.example.apitest.service.CategoriesService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.apitest.service.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class CategoriesController {
     private final CategoriesService categoriesService;
+    private final ProductService productService;
 
     @GetMapping("/list")
     public ResponseEntity<ResponseBuilder<Page<Category>>> getPageCategories(
@@ -46,5 +48,14 @@ public class CategoriesController {
     public ResponseEntity<ResponseBuilder<Boolean>> deleteCategory(@PathVariable(name = "id") Long id) throws ApiException {
         categoriesService.deleteCategory(id);
         return ResponseEntity.ok(ResponseBuilder.buildResponse(true, "Delete category successfully", HttpStatus.OK));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseBuilder<Page<Product>>> getPageProductsByCategoryID(
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "100") Integer size,
+            @PathVariable(name = "id") Long id) throws ApiException {
+        Page<Product> productsPage = productService.getProductByCategoryId(id ,page, size);
+        return ResponseEntity.ok(ResponseBuilder.buildResponse(productsPage, "Get list Products successfully", HttpStatus.OK));
     }
 }

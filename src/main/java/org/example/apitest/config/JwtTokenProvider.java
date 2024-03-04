@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
 import org.example.apitest.constant.AppConstants;
-import org.example.apitest.dto.AdminUser;
 import org.example.apitest.dto.JWTTokenDto;
 import org.example.apitest.model.User;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,7 @@ public class JwtTokenProvider {
         long currentTimeStamp = System.currentTimeMillis();
         Date expiresAt = new Date(currentTimeStamp + AppConstants.EXPIRATION_TIME);
         String accessToken = JWT.create()
-                .withSubject(user.getId())
+                .withSubject(String.valueOf(user.getId()))
                 .withIssuedAt(new Date(currentTimeStamp))
                 .withExpiresAt(expiresAt)
                 .sign(Algorithm.HMAC256(AppConstants.DEFAULT_SECRET.getBytes()));

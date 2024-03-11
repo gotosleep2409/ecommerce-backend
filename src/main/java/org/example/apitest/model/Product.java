@@ -35,9 +35,6 @@ public class Product {
     @Column(name = "price")
     private String price;
 
-    @Column(name = "quantity")
-    private String quantity;
-
     @Column(name = "priceSale")
     private String priceSale;
 
@@ -50,14 +47,16 @@ public class Product {
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private List<Category> categories;
 
-    public Product(String name, String creator, String description, String detail, String imageUrl, String price, String quantity, String priceSale, List<Category> categories) {
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductSize> productSizes;
+
+    public Product(String name, String creator, String description, String detail, String imageUrl, String price, String priceSale, List<Category> categories) {
         this.name = name;
         this.creator = creator;
         this.description = description;
         this.detail = detail;
         this.imageUrl = imageUrl;
         this.price = price;
-        this.quantity = quantity;
         this.priceSale = priceSale;
         this.categories = categories;
     }

@@ -1,4 +1,4 @@
-package org.example.apitest.model.request;
+package org.example.apitest.model.response;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.apitest.model.Category;
 
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,10 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductRequest {
+public class ProductResponse {
+    @NotNull
+    @NotEmpty
+    private Long id;
     @NotNull
     @NotEmpty
     private String name;
@@ -36,7 +40,7 @@ public class ProductRequest {
     @NotEmpty
     private String quantity;
     @NotNull
-    private List<Long> categories;
+    private List<Category> categories;
     @NotNull
     private Map<String, Integer> sizeQuantityMap;
 }

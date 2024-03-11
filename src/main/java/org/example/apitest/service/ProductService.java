@@ -4,16 +4,20 @@ import lombok.AllArgsConstructor;
 import org.example.apitest.exception.ApiException;
 import org.example.apitest.model.Category;
 import org.example.apitest.model.Product;
+import org.example.apitest.model.ProductSize;
+import org.example.apitest.model.Size;
 import org.example.apitest.model.request.ProductRequest;
 import org.example.apitest.repository.CategoriesRepository;
 import org.example.apitest.repository.ProductRepository;
+import org.example.apitest.repository.ProductSizeRepository;
+import org.example.apitest.repository.SizeRepository;
 import org.example.apitest.util.BeanUtilsAdvanced;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -23,18 +27,37 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
+    private final ProductSizeRepository productSizeRepository;
+
+    private final SizeRepository sizeRepository;
+
     public Page<Product> getPageProduct(int page, int size) {
         PageRequest paging = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
         return productRepository.findAll(paging);
     }
 
-    public Product createProduct(ProductRequest request) throws ApiException {
+    public Product createProduct(ProductRequest request, Map<String, Integer> sizeQuantityMap) throws ApiException {
         List<Category> categories = categoriesRepository.getApeCategoriesByIdIn(request.getCategories());
         if (categories.isEmpty()) {
             throw new ApiException("Not found Categories");
         }
-        Product productToCreate = new Product(request.getName(),request.getCreator() , request.getDescription(),request.getDetail(), request.getImageUrl(), request.getPrice(), request.getQuantity(), request.getPriceSale(), categories);
-        return productRepository.save(productToCreate);
+
+        Product productToCreate = new Product(request.getName(), request.getCreator(), request.getDescription(), request.getDetail(), request.getImageUrl(), request.getPrice(), request.getPriceSale(), categories);
+
+        Product savedProduct = productRepository.save(productToCreate);
+
+        sizeQuantityMap.forEach((sizeName, quantity) -> {
+            Size size = sizeRepository.getSizeByName(sizeName);
+
+            ProductSize productSize = new ProductSize();
+            productSize.setProduct(savedProduct);
+            productSize.setSize(size);
+            productSize.setQuantity(quantity);
+
+            productSizeRepository.save(productSize);
+        });
+
+        return savedProduct;
     }
 
     public Product updateProduct(Long id, ProductRequest request) throws ApiException {
@@ -44,13 +67,40 @@ public class ProductService {
             throw new ApiException("Not found with id=" + id);
         }
 
-        Product productToUpdate = productExisted.get();
         List<Category> categories = categoriesRepository.getApeCategoriesByIdIn(request.getCategories());
         if (categories.size() == 0) {
             throw new ApiException("Not found Categories with CategoryIds body request");
         }
-        Product productRequest = new Product(request.getName(),request.getCreator() , request.getDescription(),request.getDetail(), request.getImageUrl(), request.getPrice(), request.getQuantity(), request.getPriceSale(), categories);
+
+        Product productRequest = new Product(request.getName(), request.getCreator(), request.getDescription(), request.getDetail(), request.getImageUrl(), request.getPrice(), request.getPriceSale(), categories);
+
+        Product productToUpdate = productExisted.get();
+
         BeanUtilsAdvanced.copyProperties(productRequest, productToUpdate);
+
+        productToUpdate.setCategories(categories);
+
+        for (Map.Entry<String, Integer> entry : request.getSizeQuantityMap().entrySet()) {
+            String sizeName = entry.getKey();
+            Integer quantity = entry.getValue();
+
+            ProductSize productSize = productSizeRepository.findByProductIdAndSizeName(id, sizeName);
+            if (productSize != null) {
+                productSize.setQuantity(quantity);
+                productSize.setProduct(productToUpdate);
+            } else {
+                Size size = sizeRepository.getSizeByName(sizeName);
+                if (size != null) {
+                    productSize = new ProductSize();
+                    productSize.setProduct(productToUpdate);
+                    productSize.setSize(size);
+                    productSize.setQuantity(quantity);
+                    productToUpdate.getProductSizes().add(productSize);
+                } else {
+                    throw new ApiException("Size not found: " + sizeName);
+                }
+            }
+        }
         return productRepository.save(productToUpdate);
     }
 
@@ -70,4 +120,9 @@ public class ProductService {
         }
         return productRepository.findByCategories(categoryOptional, paging);
     }
+
+    public Product findProductWithProductSizesById(Long productId) {
+        return productRepository.findProductWithProductSizesById(productId);
+    }
+
 }

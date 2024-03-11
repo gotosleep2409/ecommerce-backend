@@ -1,6 +1,4 @@
 package org.example.apitest.model;
-
-
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;

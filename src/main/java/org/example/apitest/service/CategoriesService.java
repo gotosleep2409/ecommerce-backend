@@ -23,7 +23,7 @@ public class CategoriesService {
         return categoriesRepository.save(categoriesToSave);
     }
 
-    public Category updateApeCategory(Long id, CategoriesRequest categoriesToUpdate) throws ApiException {
+    public Category updateCategory(Long id, CategoriesRequest categoriesToUpdate) throws ApiException {
         Optional<Category> apeCategoriesExisted = categoriesRepository.findById(id);
         if (!apeCategoriesExisted.isPresent()) {
             throw new ApiException("Not found with id=" + id);

@@ -45,7 +45,7 @@ public class CategoriesController {
     public ResponseEntity<ResponseBuilder<Category>> updateApeCategory(
             @PathVariable(name = "id") Long id,
             @RequestBody CategoriesRequest categoriesToUpdate) throws ApiException {
-        Category apeCategories = categoriesService.updateApeCategory(id, categoriesToUpdate);
+        Category apeCategories = categoriesService.updateCategory(id, categoriesToUpdate);
         return ResponseEntity.ok(ResponseBuilder.buildResponse(apeCategories, "Update categories successfully", HttpStatus.OK));
     }
 

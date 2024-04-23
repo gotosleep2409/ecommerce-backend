@@ -35,6 +35,9 @@ public class Product {
     @Column(name = "price")
     private String price;
 
+    @Column(name = "quantity")
+    private Long quantity;
+
     @Column(name = "priceSale")
     private String priceSale;
 

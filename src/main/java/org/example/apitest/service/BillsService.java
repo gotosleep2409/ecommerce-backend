@@ -4,9 +4,11 @@ import lombok.AllArgsConstructor;
 import org.example.apitest.config.Config;
 import org.example.apitest.exception.ApiException;
 import org.example.apitest.model.*;
+import org.example.apitest.model.dto.BillDetailDTO;
+import org.example.apitest.model.dto.BillDetailProductDTO;
 import org.example.apitest.model.dto.SizeQuantityDTO;
 import org.example.apitest.model.dto.paymentDTO;
-import org.example.apitest.model.request.CategoriesRequest;
+import org.example.apitest.model.request.BillsRequest;
 import org.example.apitest.model.response.BillDetailResponse;
 import org.example.apitest.model.response.BillResponse;
 import org.example.apitest.repository.*;
@@ -17,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -51,7 +54,7 @@ public class BillsService {
         bill.setShoppingAddress(billResponse.getAddress());
         bill.setPhoneNumber(billResponse.getPhone());
         bill.setPaymentMethod(billResponse.getPaymentMethod());
-        if ("Bank Transfer".equals(billResponse.getPaymentMethod())) {
+        if ("Bank transfer".equals(billResponse.getPaymentMethod())) {
             bill.setPaymentStatus("Chờ xác thực");
         } else if ("COD".equals(billResponse.getPaymentMethod())) {
             bill.setPaymentStatus("Chờ thanh toán");
@@ -103,21 +106,24 @@ public class BillsService {
         return bill;
     }
 
-    public Bills updateBills (Long id, CategoriesRequest categoriesToUpdate) throws ApiException {
+    public Bills updateBills(Long id, BillsRequest billToUpdate) throws ApiException {
         Optional<Bills> billsExisted = billsRepository.findById(id);
         if (!billsExisted.isPresent()) {
             throw new ApiException("Not found with id=" + id);
         }
         Bills bill = billsExisted.get();
-        BeanUtilsAdvanced.copyProperties(categoriesToUpdate, bill);
+        BeanUtilsAdvanced.copyProperties(billToUpdate, bill);
+
         return billsRepository.save(bill);
     }
 
+    @Transactional
     public void deleteBill (Long id) throws ApiException {
         Optional<Bills> billExisted = billsRepository.findById(id);
         if (!billExisted.isPresent()) {
             throw new ApiException("Not found with id=" + id);
         }
+        detailsRepository.deleteByBillId(id);
         billsRepository.delete(billExisted.get());
     }
 
@@ -187,8 +193,52 @@ public class BillsService {
         paymentDTO.setMessage("Successfully");
         return paymentDTO;
     }
+
+    public BillDetailDTO getBillDetails(Long billId) {
+        List<BillDetails> results = detailsRepository.findBillDetailsByBillId(billId);
+        if (results.isEmpty()) {
+            return null;
+        }
+
+        BillDetailDTO billDetailDTO = new BillDetailDTO();
+        billDetailDTO.setProducts(new ArrayList<>());
+        for (BillDetails result: results){
+            billDetailDTO.setId(result.getBill().getId());
+            billDetailDTO.setCode(result.getBill().getCode());
+            billDetailDTO.setNote(result.getBill().getNote());
+            billDetailDTO.setStatus(result.getBill().getStatus());
+            billDetailDTO.setDate(result.getBill().getDate());
+            billDetailDTO.setTotalAmount(result.getBill().getTotalAmount());
+            billDetailDTO.setPaymentMethod(result.getBill().getPaymentMethod());
+            billDetailDTO.setPaymentStatus(result.getBill().getPaymentStatus());
+            billDetailDTO.setShoppingAddress(result.getBill().getShoppingAddress());
+            billDetailDTO.setPhoneNumber(result.getBill().getPhoneNumber());
+            billDetailDTO.setEmail(result.getBill().getEmail());
+            billDetailDTO.setName(result.getBill().getName());
+            billDetailDTO.setUser(result.getBill().getUser());
+
+            boolean productExists = false;
+
+            for (BillDetailProductDTO productDTO : billDetailDTO.getProducts()) {
+                if (productDTO.getProductName().equals(result.getProduct().getName())) {
+                    productExists = true;
+                    productDTO.getSizeQuantity().add(new SizeQuantityDTO(result.getSize().getName(), result.getQuantity()));
+                    break;
+                }
+            }
+
+            if (!productExists) {
+                BillDetailProductDTO newProductDTO = new BillDetailProductDTO();
+                newProductDTO.setProductName(result.getProduct().getName());
+
+                List<SizeQuantityDTO> newSizeQuantityDTOList = new ArrayList<>();
+                newSizeQuantityDTOList.add(new SizeQuantityDTO(result.getSize().getName(), result.getQuantity()));
+                newProductDTO.setSizeQuantity(newSizeQuantityDTOList);
+
+                billDetailDTO.getProducts().add(newProductDTO);
+            }
+
+        }
+        return billDetailDTO;
+    }
 }
-
-
-
-

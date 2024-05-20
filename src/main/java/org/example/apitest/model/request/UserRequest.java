@@ -20,6 +20,12 @@ public class UserRequest {
     private String username;
     @NotNull
     @NotEmpty
+    private String email;
+    @NotNull
+    @NotEmpty
+    private Long phone;
+    @NotNull
+    @NotEmpty
     private String password;
     @NotNull
     @NotEmpty

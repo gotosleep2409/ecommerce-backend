@@ -9,6 +9,7 @@ import org.example.apitest.helper.ResponseBuilder;
 import org.example.apitest.model.User;
 import org.example.apitest.model.request.RegisterRequest;
 import org.example.apitest.model.request.UserRequest;
+import org.example.apitest.model.request.changeUserPasswordRequest;
 import org.example.apitest.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ public class UserController {
         return ResponseEntity.ok(jwtTokenDto);
     }
 
-    @PostMapping("register")
+    @PostMapping("/register")
     public ResponseEntity<ResponseBuilder<User>> register(@Valid @RequestBody RegisterRequest registerRequest) throws ApiException{
         User user = userService.register(registerRequest);
         return ResponseEntity.ok(ResponseBuilder.buildResponse(user, "Register user successfully", HttpStatus.OK));
@@ -54,6 +55,21 @@ public class UserController {
     public ResponseEntity<ResponseBuilder<Boolean>> deleteUser(@PathVariable(name = "id") Long id) throws ApiException {
         userService.deleteUser(id);
         return ResponseEntity.ok(ResponseBuilder.buildResponse(true, "Delete user successfully", HttpStatus.OK));
+    }
+
+    @PutMapping("/changePassword/{id}")
+    public ResponseEntity<ResponseBuilder<User>> changeUserPassword(
+            @PathVariable(name = "id") Long id,
+            @RequestBody changeUserPasswordRequest changeUserPasswordRequest) throws ApiException {
+        User user = userService.changePassword(id, changeUserPasswordRequest);
+        return ResponseEntity.ok(ResponseBuilder.buildResponse(user, "Update password successfully", HttpStatus.OK));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseBuilder<User>> getPageCategories(
+            @PathVariable(name = "id") Long id) throws ApiException{
+        User user = userService.getUserById(id);
+        return ResponseEntity.ok(ResponseBuilder.buildResponse(user, "Get list user id successfully", HttpStatus.OK));
     }
 }
 

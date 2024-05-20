@@ -36,6 +36,12 @@ public class User implements UserDetails {
     @Column(name = "password")
     private String password;
 
+    @Column(name = "phone")
+    private Long phone;
+
+    @Column(name = "email")
+    private String email;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", updatable = false)
@@ -74,10 +80,12 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-    public User(String name, String username, String password, String role){
+    public User(String name, String username, String password, String role, Long phone, String email){
         this.name = name;
         this.username = username;
         this.password = password;
         this.role = role;
+        this.phone = phone;
+        this.email = email;
     }
 }

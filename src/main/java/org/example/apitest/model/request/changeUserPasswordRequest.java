@@ -6,27 +6,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.apitest.model.Role;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterRequest {
+public class changeUserPasswordRequest {
     @NotNull
     @NotEmpty
     private String name;
     @NotNull
     @NotEmpty
-    private String username;
+    private String previousPassword;
     @NotNull
     @NotEmpty
-    private String email;
-    @NotNull
-    @NotEmpty
-    private Long phone;
-    @NotNull
-    @NotEmpty
-    private String password;
-    private Role role;
+    private String newPassword;
 }

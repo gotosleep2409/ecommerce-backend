@@ -9,6 +9,7 @@ import org.example.apitest.exception.ErrorMessage;
 import org.example.apitest.model.User;
 import org.example.apitest.model.request.RegisterRequest;
 import org.example.apitest.model.request.UserRequest;
+import org.example.apitest.model.request.changeUserPasswordRequest;
 import org.example.apitest.repository.UserRepository;
 import org.example.apitest.util.BeanUtilsAdvanced;
 import org.springframework.data.domain.Page;
@@ -40,8 +41,12 @@ public class UserService {
         return jwtTokenProvider.generateJWTTokenForUser(user);
     }
 
-    public User register(RegisterRequest request) {
-        User userRegister = new User(request.getName(), request.getUsername(), encodePassword(request.getPassword()),"USER" );
+    public User register(RegisterRequest request) throws ApiException {
+        Optional<User> userOptional = userRepository.findUserByUsername(request.getUsername());
+        if(userOptional.isPresent()){
+            throw new ApiException("Username existed=" + request.getUsername());
+        }
+        User userRegister = new User(request.getName(), request.getUsername(), encodePassword(request.getPassword()),"USER", request.getPhone(), request.getEmail());
         return userRepository.save(userRegister);
     }
 
@@ -71,6 +76,9 @@ public class UserService {
             throw new ApiException("Not found with id=" + id);
         }
         User user = userExisted.get();
+        user.setName(userRequest.getName());
+        user.setPhone(userRequest.getPhone());
+        user.setEmail(userRequest.getEmail());
         BeanUtilsAdvanced.copyProperties(userRequest, user);
         return userRepository.save(user);
     }
@@ -81,5 +89,29 @@ public class UserService {
             throw new ApiException("Not found with id=" + id);
         }
         userRepository.delete(userExisted.get());
+    }
+
+    public User changePassword(Long id, changeUserPasswordRequest changeUserPasswordRequest) throws ApiException {
+        Optional<User> userExisted = userRepository.findById(id);
+        if (!userExisted.isPresent()) {
+            throw new ApiException("Not found with id=" + id);
+        }
+        User user = userExisted.get();
+        if (user.getPassword().equals(encodePassword(changeUserPasswordRequest.getPreviousPassword()))) {
+            user.setPassword(encodePassword(changeUserPasswordRequest.getNewPassword()));
+        } else {
+            throw new ApiException("Mật khẩu không trùng khớp=" + id);
+        }
+        BeanUtilsAdvanced.copyProperties(changeUserPasswordRequest, user);
+        return userRepository.save(user);
+    }
+
+    public User getUserById(Long id) throws ApiException{
+        Optional<User> userExisted = userRepository.findById(id);
+        if (!userExisted.isPresent()) {
+            throw new ApiException("Not found with id=" + id);
+        }
+        User user = userExisted.get();
+        return user;
     }
 }

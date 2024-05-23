@@ -48,7 +48,7 @@ public class BillController {
     @GetMapping("/list")
     public ResponseEntity<ResponseBuilder<Page<Bills>>> getPageOrder(
             @RequestParam(required = false, defaultValue = "1") int page,
-            @RequestParam(required = false, defaultValue = "100") Integer size) {
+            @RequestParam(required = false, defaultValue = "10") Integer size) {
         Page<Bills> OrderList = billService.getPageBills(page, size);
         return ResponseEntity.ok(ResponseBuilder.buildResponse(OrderList, "Get list order successfully", HttpStatus.OK));
     }
@@ -74,5 +74,14 @@ public class BillController {
             @RequestBody BillsRequest billToUpdate) throws ApiException {
         Bills bills = billService.updateBills(id, billToUpdate);
         return ResponseEntity.ok(ResponseBuilder.buildResponse(bills, "Update categories successfully", HttpStatus.OK));
+    }
+
+    @GetMapping("/billByUserId/{id}")
+    public ResponseEntity<ResponseBuilder<Page<Bills>>> getBillByUserId(
+            @PathVariable(name = "id") Long id,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") Integer size) {
+        Page<Bills> BillByUserId = billService.getPageBillsByID(page, size, id);
+        return ResponseEntity.ok(ResponseBuilder.buildResponse(BillByUserId, "Get Bill By User Id order successfully", HttpStatus.OK));
     }
 }

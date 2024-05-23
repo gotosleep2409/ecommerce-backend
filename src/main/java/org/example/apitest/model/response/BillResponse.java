@@ -14,13 +14,27 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BillResponse {
+    @NotNull
+    @NotEmpty
     private String address;
+    @NotNull
+    @NotEmpty
     private String email;
+    @NotNull
+    @NotEmpty
     private String name;
     private Long userId;
     private String notes;
+    @NotNull
+    @NotEmpty
     private String paymentMethod;
+    @NotNull
+    @NotEmpty
     private String phone;
+    @NotNull
+    @NotEmpty
     private List<BillDetailResponse> billDetails;
+    @NotNull
+    @NotEmpty
     private String totalPrice;
 }

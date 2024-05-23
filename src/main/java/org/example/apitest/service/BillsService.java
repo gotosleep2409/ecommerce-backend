@@ -241,4 +241,9 @@ public class BillsService {
         }
         return billDetailDTO;
     }
+
+    public Page<Bills> getPageBillsByID(int page, int size, long id) {
+        PageRequest paging = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
+        return billsRepository.findByUserId(paging, id);
+    }
 }

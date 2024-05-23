@@ -22,5 +22,5 @@ public interface ProductRepository extends PagingAndSortingRepository<Product, L
     @Query("SELECT p FROM Product p JOIN FETCH p.productSizes ps WHERE p.id = :productId")
     Product findProductWithProductSizesById(@Param("productId") Long productId);
 
-
+    Page<Product> findByCategoriesId(Long categoryId, Pageable pageable);
 }

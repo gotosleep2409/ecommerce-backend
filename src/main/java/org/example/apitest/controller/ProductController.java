@@ -42,8 +42,9 @@ public class ProductController {
     @GetMapping("/list")
     public ResponseEntity<ResponseBuilder<Page<ProductResponse>>> getPageProducts(
             @RequestParam(required = false, defaultValue = "1") int page,
-            @RequestParam(required = false, defaultValue = "100") Integer size) {
-        Page<Product> productsPage = productService.getPageProduct(page, size);
+            @RequestParam(required = false, defaultValue = "10") Integer size,
+            @RequestParam(required = false) Long categoryId) {
+        Page<Product> productsPage = productService.getPageProduct(page, size, categoryId);
 
         Page<ProductResponse> productRequestsPage = productsPage.map(product -> {
             ProductResponse productResponse = new ProductResponse();

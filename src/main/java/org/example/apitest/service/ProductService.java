@@ -14,6 +14,7 @@ import org.example.apitest.repository.SizeRepository;
 import org.example.apitest.util.BeanUtilsAdvanced;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -31,8 +32,11 @@ public class ProductService {
 
     private final SizeRepository sizeRepository;
 
-    public Page<Product> getPageProduct(int page, int size) {
-        PageRequest paging = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
+    public Page<Product> getPageProduct(int page, int size, Long categoryId) {
+        Pageable paging = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
+        if (categoryId != null) {
+            return productRepository.findByCategoriesId(categoryId, paging);
+        }
         return productRepository.findAll(paging);
     }
 

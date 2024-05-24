@@ -53,6 +53,9 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProductSize> productSizes;
 
+    @Transient
+    private List<Comments> comments;
+
     public Product(String name, String creator, String description, String detail, String imageUrl, String price, String priceSale, List<Category> categories) {
         this.name = name;
         this.creator = creator;

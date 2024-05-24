@@ -35,6 +35,7 @@ public class BillsService {
     private SizeRepository sizeRepository;
     private BillDetailsRepository detailsRepository;
     private ProductSizeRepository productSizeRepository;
+    private CommentsRepository commentsRepository;
 
     public Page<Bills> getPageBills(int page, int size) {
         PageRequest paging = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
@@ -230,10 +231,14 @@ public class BillsService {
             if (!productExists) {
                 BillDetailProductDTO newProductDTO = new BillDetailProductDTO();
                 newProductDTO.setProductName(result.getProduct().getName());
+                newProductDTO.setProductId(result.getProduct().getId());
 
                 List<SizeQuantityDTO> newSizeQuantityDTOList = new ArrayList<>();
                 newSizeQuantityDTOList.add(new SizeQuantityDTO(result.getSize().getName(), result.getQuantity()));
                 newProductDTO.setSizeQuantity(newSizeQuantityDTOList);
+
+                Comments reviews = commentsRepository.findByProductIdAndBillIdAndUserId(result.getProduct().getId(), billId, result.getBill().getUser().getId());
+                newProductDTO.setReviewed(reviews != null);
 
                 billDetailDTO.getProducts().add(newProductDTO);
             }

@@ -11,6 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BillDetailProductDTO {
+    private Long productId;
     private String productName;
     private List<SizeQuantityDTO> sizeQuantity;
+    private boolean reviewed;
 }

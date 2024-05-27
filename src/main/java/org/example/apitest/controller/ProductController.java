@@ -4,11 +4,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.apitest.exception.ApiException;
 import org.example.apitest.helper.ResponseBuilder;
+import org.example.apitest.model.Comments;
 import org.example.apitest.model.Product;
 import org.example.apitest.model.ProductSize;
 import org.example.apitest.model.Size;
 import org.example.apitest.model.request.ProductRequest;
 import org.example.apitest.model.response.ProductResponse;
+import org.example.apitest.repository.CommentsRepository;
 import org.example.apitest.repository.ProductSizeRepository;
 import org.example.apitest.repository.SizeRepository;
 import org.example.apitest.service.ProductService;
@@ -30,6 +32,7 @@ public class ProductController {
     private final ProductService productService;
     private final SizeRepository sizeRepository;
     private final ProductSizeRepository productSizeRepository;
+    private final CommentsRepository commentsRepository;
 
     /*@GetMapping("/list")
     public ResponseEntity<ResponseBuilder<Page<Product>>> getPageProducts(
@@ -106,6 +109,7 @@ public class ProductController {
     @GetMapping("/{productId}")
     public ResponseEntity<ProductResponse> getProductWithProductSizesById(
             @PathVariable Long productId) {
+        List<Comments> comments = commentsRepository.findCommentByProductId(productId);
         Product product = productService.findProductWithProductSizesById(productId);
         ProductResponse productResponse = new ProductResponse();
         productResponse.setId(productId);
@@ -123,7 +127,7 @@ public class ProductController {
             sizeQuantityMap.put(productSize.getSize().getName(), productSize.getQuantity());
         }
         productResponse.setSizeQuantityMap(sizeQuantityMap);
-
+        productResponse.setComments(comments);
         return ResponseEntity.ok(productResponse);
     }
 

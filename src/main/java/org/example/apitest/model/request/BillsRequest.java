@@ -14,5 +14,5 @@ public class BillsRequest {
     private String paymentMethod;
     private String paymentStatus;
     private String status;
-    private String shoppingAddress;
+    private String shoppingAddress; 
 }

@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.apitest.model.Category;
+import org.example.apitest.model.Comments;
+import org.example.apitest.model.Product;
 
 import java.util.List;
 import java.util.Map;
@@ -43,5 +45,7 @@ public class ProductResponse {
     private List<Category> categories;
     @NotNull
     private Map<String, Integer> sizeQuantityMap;
+    private List<Comments> comments;
+    private List<Product> relatedTo;
 }
 

@@ -48,8 +48,12 @@ public class BillController {
     @GetMapping("/list")
     public ResponseEntity<ResponseBuilder<Page<Bills>>> getPageOrder(
             @RequestParam(required = false, defaultValue = "1") int page,
-            @RequestParam(required = false, defaultValue = "10") Integer size) {
-        Page<Bills> OrderList = billService.getPageBills(page, size);
+            @RequestParam(required = false, defaultValue = "10") Integer size,
+            @RequestParam(value = "paymentMethod", required = false, defaultValue = "") String paymentMethod,
+            @RequestParam(value = "paymentStatus", required = false, defaultValue = "") String paymentStatus,
+            @RequestParam(value = "status", required = false, defaultValue = "") String status,
+            @RequestParam(value = "code", required = false, defaultValue = "") String code) {
+        Page<Bills> OrderList = billService.getPageBills(page, size, paymentMethod, paymentStatus, status, code);
         return ResponseEntity.ok(ResponseBuilder.buildResponse(OrderList, "Get list order successfully", HttpStatus.OK));
     }
 

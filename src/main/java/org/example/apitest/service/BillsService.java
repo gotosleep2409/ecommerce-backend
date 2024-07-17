@@ -37,9 +37,13 @@ public class BillsService {
     private ProductSizeRepository productSizeRepository;
     private CommentsRepository commentsRepository;
 
-    public Page<Bills> getPageBills(int page, int size) {
+    public Page<Bills> getPageBills(int page, int size, String paymentMethod, String paymentStatus, String status, String code) {
         PageRequest paging = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
-        return billsRepository.findAll(paging);
+        paymentMethod = "%" + paymentMethod + "%";
+        paymentStatus = "%" + paymentStatus + "%";
+        status = "%" + status + "%";
+        code = "%" + code + "%";
+        return billsRepository.getPageFilter(paymentMethod,paymentStatus,status,code,paging);
     }
 
     public Bills createdBill(BillResponse billResponse) {

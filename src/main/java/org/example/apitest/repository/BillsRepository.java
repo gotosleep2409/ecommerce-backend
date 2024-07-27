@@ -11,6 +11,9 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
+import java.util.List;
+
 @Repository
 public interface BillsRepository extends PagingAndSortingRepository<Bills, Long>, CrudRepository<Bills, Long> {
     Page<Bills> findByUserId(Pageable pageable, Long id);
@@ -26,4 +29,6 @@ public interface BillsRepository extends PagingAndSortingRepository<Bills, Long>
             Pageable pageable
     );
 
+    @Query("SELECT b FROM Bills b WHERE b.date BETWEEN :startDate AND :endDate")
+    List<Bills> findAllByDateRange(Date startDate, Date endDate);
 }

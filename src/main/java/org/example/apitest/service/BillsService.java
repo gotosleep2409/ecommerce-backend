@@ -8,6 +8,7 @@ import org.example.apitest.model.dto.BillDetailDTO;
 import org.example.apitest.model.dto.BillDetailProductDTO;
 import org.example.apitest.model.dto.SizeQuantityDTO;
 import org.example.apitest.model.dto.paymentDTO;
+import org.example.apitest.model.request.BillReportRequest;
 import org.example.apitest.model.request.BillsRequest;
 import org.example.apitest.model.response.BillDetailResponse;
 import org.example.apitest.model.response.BillResponse;
@@ -25,6 +26,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -241,8 +243,19 @@ public class BillsService {
                 newSizeQuantityDTOList.add(new SizeQuantityDTO(result.getSize().getName(), result.getQuantity()));
                 newProductDTO.setSizeQuantity(newSizeQuantityDTOList);
 
-                Comments reviews = commentsRepository.findByProductIdAndBillIdAndUserId(result.getProduct().getId(), billId, result.getBill().getUser().getId());
-                newProductDTO.setReviewed(reviews != null);
+                /*Comments reviews = commentsRepository.findByProductIdAndBillIdAndUserId(result.getProduct().getId(), billId, result.getBill().getUser().getId());
+                newProductDTO.setReviewed(reviews != null);*/
+
+                if (result.getBill().getUser() != null && result.getBill().getUser().getId() != null) {
+                    Comments reviews = commentsRepository.findByProductIdAndBillIdAndUserId(
+                            result.getProduct().getId(),
+                            billId,
+                            result.getBill().getUser().getId()
+                    );
+                    newProductDTO.setReviewed(reviews != null);
+                } else {
+                    newProductDTO.setReviewed(false);
+                }
 
                 billDetailDTO.getProducts().add(newProductDTO);
             }
@@ -254,5 +267,128 @@ public class BillsService {
     public Page<Bills> getPageBillsByID(int page, int size, long id) {
         PageRequest paging = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
         return billsRepository.findByUserId(paging, id);
+    }
+
+    public Map<String, Object> getLast12MonthsStatistics() {
+        Calendar calendar = Calendar.getInstance();
+        Date endDate = calendar.getTime();
+        calendar.add(Calendar.MONTH, -11);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        Date startDate = calendar.getTime();
+
+        List<Bills> bills = billsRepository.findAllByDateRange(startDate, endDate);
+
+        Map<String, Integer> totalOrders = new HashMap<>();
+        Map<String, Integer> successfulOrders = new HashMap<>();
+        Map<String, Integer> canceledOrders = new HashMap<>();
+
+        List<String> months = new ArrayList<>();
+        calendar.setTime(startDate);
+        for (int i = 0; i < 12; i++) {
+            String monthName = String.format("%1$tB %1$tY", calendar.getTime());
+            months.add(monthName);
+            totalOrders.put(monthName, 0);
+            successfulOrders.put(monthName, 0);
+            canceledOrders.put(monthName, 0);
+            calendar.add(Calendar.MONTH, 1);
+        }
+
+        for (Bills bill : bills) {
+            Calendar billCalendar = Calendar.getInstance();
+            billCalendar.setTime(bill.getDate());
+            String monthName = String.format("%1$tB %1$tY", billCalendar.getTime());
+
+            if (totalOrders.containsKey(monthName)) {
+                totalOrders.put(monthName, totalOrders.get(monthName) + 1);
+                if ("Đã giao hàng".equalsIgnoreCase(bill.getStatus())) {
+                    successfulOrders.put(monthName, successfulOrders.get(monthName) + 1);
+                }
+                if ("Đơn hàng hủy".equalsIgnoreCase(bill.getStatus())) {
+                    canceledOrders.put(monthName, canceledOrders.get(monthName) + 1);
+                }
+            }
+        }
+
+        List<Integer> totalOrdersList = months.stream().map(totalOrders::get).collect(Collectors.toList());
+        List<Integer> successfulOrdersList = months.stream().map(successfulOrders::get).collect(Collectors.toList());
+        List<Integer> canceledOrdersList = months.stream().map(canceledOrders::get).collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("period", "Month");
+        result.put("labels", months);
+        result.put("datasets", Arrays.asList(
+                new BillReportRequest("Tổng số đơn hàng", totalOrdersList),
+                new BillReportRequest("Đơn hàng thành công", successfulOrdersList),
+                new BillReportRequest("Đơn hàng hủy", canceledOrdersList)
+        ));
+
+        return result;
+    }
+
+    public Map<String, Object> getLastWeekStatistics() {
+        Date endDate = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(endDate);
+        calendar.add(Calendar.DAY_OF_YEAR, -6);
+        Date startDate = calendar.getTime();
+
+        List<Bills> bills = billsRepository.findAllByDateRange(startDate, endDate);
+
+        Map<String, Integer> totalOrders = new HashMap<>();
+        Map<String, Integer> successfulOrders = new HashMap<>();
+        Map<String, Integer> canceledOrders = new HashMap<>();
+
+        List<String> days = getLast7Days();
+        for (String day : days) {
+            totalOrders.put(day, 0);
+            successfulOrders.put(day, 0);
+            canceledOrders.put(day, 0);
+        }
+
+        SimpleDateFormat dayFormat = new SimpleDateFormat("dd/MM");
+        SimpleDateFormat weekDayFormat = new SimpleDateFormat("EEEE", Locale.ENGLISH);
+
+        for (Bills bill : bills) {
+            String billDay = dayFormat.format(bill.getDate());
+            String dayOfWeek = weekDayFormat.format(bill.getDate());
+
+            if (totalOrders.containsKey(billDay)) {
+                totalOrders.put(billDay, totalOrders.get(billDay) + 1);
+                if ("Đã giao hàng".equalsIgnoreCase(bill.getStatus())) {
+                    successfulOrders.put(billDay, successfulOrders.get(billDay) + 1);
+                } else if ("Đơn hàng hủy".equalsIgnoreCase(bill.getStatus())) {
+                    canceledOrders.put(billDay, canceledOrders.get(billDay) + 1);
+                }
+            }
+        }
+
+        List<Integer> totalOrdersList = days.stream().map(totalOrders::get).collect(Collectors.toList());
+        List<Integer> successfulOrdersList = days.stream().map(successfulOrders::get).collect(Collectors.toList());
+        List<Integer> canceledOrdersList = days.stream().map(canceledOrders::get).collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("period", "Day");
+        result.put("labels", days);
+        result.put("datasets", Arrays.asList(
+                new BillReportRequest("Tổng số đơn hàng", totalOrdersList),
+                new BillReportRequest("Đơn hàng thành công", successfulOrdersList),
+                new BillReportRequest("Đơn hàng hủy", canceledOrdersList)
+        ));
+
+        return result;
+    }
+
+    private List<String> getLast7Days() {
+        List<String> days = new ArrayList<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM");
+        Calendar calendar = Calendar.getInstance();
+
+        for (int i = 0; i < 7; i++) {
+            days.add(dateFormat.format(calendar.getTime()));
+            calendar.add(Calendar.DAY_OF_YEAR, -1);
+        }
+
+        Collections.reverse(days);
+        return days;
     }
 }

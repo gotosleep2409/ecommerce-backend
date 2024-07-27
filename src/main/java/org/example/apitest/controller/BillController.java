@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 
 @RestController
@@ -87,5 +88,17 @@ public class BillController {
             @RequestParam(required = false, defaultValue = "10") Integer size) {
         Page<Bills> BillByUserId = billService.getPageBillsByID(page, size, id);
         return ResponseEntity.ok(ResponseBuilder.buildResponse(BillByUserId, "Get Bill By User Id order successfully", HttpStatus.OK));
+    }
+
+    @GetMapping("/chart-data") 
+    public ResponseEntity<ResponseBuilder<Map<String, Object>>> getChartData(@RequestParam String period) {
+        if ("month".equalsIgnoreCase(period)) {
+            Map<String, Object> data = billService.getLast12MonthsStatistics();
+            return ResponseEntity.ok(ResponseBuilder.buildResponse(data, "Get data successfully", HttpStatus.OK));
+        }else if ("day".equalsIgnoreCase(period)) {
+            Map<String, Object> data = billService.getLastWeekStatistics();
+            return ResponseEntity.ok(ResponseBuilder.buildResponse(data, "Get data successfully", HttpStatus.OK));
+        }
+        return ResponseEntity.ok(ResponseBuilder.buildResponse(null, "Get data successfully", HttpStatus.BAD_REQUEST));
     }
 }

@@ -15,7 +15,9 @@ import org.example.apitest.repository.ProductSizeRepository;
 import org.example.apitest.repository.SizeRepository;
 import org.example.apitest.service.ProductService;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -129,6 +131,20 @@ public class ProductController {
         productResponse.setSizeQuantityMap(sizeQuantityMap);
         productResponse.setComments(comments);
         return ResponseEntity.ok(productResponse);
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportProductsToExcel() {
+        byte[] excelData = productService.exportProductsToExcel();
+
+        // Cấu hình headers cho response
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=products.xlsx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(excelData);
     }
 
 }

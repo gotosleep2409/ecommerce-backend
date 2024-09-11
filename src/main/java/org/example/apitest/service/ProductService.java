@@ -1,6 +1,11 @@
 package org.example.apitest.service;
 
 import lombok.AllArgsConstructor;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.apitest.exception.ApiException;
 import org.example.apitest.model.Category;
 import org.example.apitest.model.Product;
@@ -17,6 +22,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -128,5 +136,42 @@ public class ProductService {
     public Product findProductWithProductSizesById(Long productId) {
         return productRepository.findProductWithProductSizesById(productId);
     }
+
+    public byte[] exportProductsToExcel() {
+        List<Product> productList = new ArrayList<>();
+        productRepository.findAll().forEach(productList::add);
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            Sheet sheet = workbook.createSheet("Products");
+
+            // Tạo dòng tiêu đề
+            Row headerRow = sheet.createRow(0);
+            String[] columns = {"ID", "Product Name", "Size", "Remaining Quantity"};
+            for (int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columns[i]);
+            }
+
+            // Điền dữ liệu sản phẩm và số lượng theo size
+            int rowNum = 1;
+            for (Product product : productList) {
+                for (ProductSize productSize : product.getProductSizes()) {
+                    Row row = sheet.createRow(rowNum++);
+                    row.createCell(0).setCellValue(product.getId());
+                    row.createCell(1).setCellValue(product.getName());
+                    row.createCell(2).setCellValue(productSize.getSize().getName());
+                    row.createCell(3).setCellValue(productSize.getQuantity());
+                }
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error while exporting data to Excel");
+        }
+    }
+
 
 }

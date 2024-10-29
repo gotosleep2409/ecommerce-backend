@@ -7,9 +7,9 @@ import java.util.Random;
 
 public class Config {
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    public static String vnp_ReturnUrl = "http://localhost:4200/#/checkout";
-    public static String vnp_TmnCode = "59ZBNTKQ";
-    public static String secretKey = "FWGVKKJXLUDRUYQRCCNLUHVBEVVKLWZC";
+    public static String vnp_ReturnUrl = "http://localhost:4200/checkout";
+    public static String vnp_TmnCode = "7KS30ZUY";
+    public static String secretKey = "FC0DNL8YU5B9AZISS8CFYLN2HIE0DDAJ";
     public static String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
 
 

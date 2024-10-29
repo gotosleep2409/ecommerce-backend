@@ -10,65 +10,43 @@ import org.springframework.data.annotation.LastModifiedDate;
 import javax.persistence.*;
 import java.util.Date;
 @Entity
-@Table(name = "bills")
+@Table(name = "discount_code")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-
-public class Bills {
+public class DiscountCode {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
+    @Column(name= "name")
+    private String name;
+
     @Column(name= "code")
     private String code;
 
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "bill_date", updatable = false)
-    @CreatedDate
-    private Date date;
+    @Column(name = "percent_discount")
+    private String percentDiscount;
 
-    @Column(name= "bill_status")
-    private String status;
+    @Column(name = "used")
+    private String usedNumber;
 
-    @Column(name= "note")
-    private String note;
-
-    @Column(name= "payment_method")
-    private String paymentMethod;
-
-    @Column(name = "status")
-    private String paymentStatus;
-
-    @Column(name = "shopping_address")
-    private String shoppingAddress;
-
-    @Column(name = "phone")
-    private String phoneNumber;
-
-    @Column(name = "email")
-    private String email;
-
-    @Column(name = "total_amount")
-    private String totalAmount;
-
-    @Column(name = "discounted_amount")
-    private String discountedAmount;
-
-    @Column(name = "discounted_code")
-    private String discountCode;
-
-    @Column(name = "name")
-    private String name;
+    @Column(name = "duration")
+    private Boolean duration;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at", updatable = false)
+    @CreatedDate
+    private Date createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")

@@ -38,6 +38,7 @@ public class BillsService {
     private BillDetailsRepository detailsRepository;
     private ProductSizeRepository productSizeRepository;
     private CommentsRepository commentsRepository;
+    private DiscountCodeRepository discountCodeRepository;
 
     public Page<Bills> getPageBills(int page, int size, String paymentMethod, String paymentStatus, String status, String code) {
         PageRequest paging = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
@@ -71,6 +72,8 @@ public class BillsService {
         bill.setStatus("Đang chuẩn bị hàng");
         bill.setTotalAmount(billResponse.getTotalPrice());
         bill.setNote(billResponse.getNotes());
+        bill.setDiscountCode(billResponse.getCodeDiscount());
+        bill.setDiscountedAmount(billResponse.getDiscountedAmount());
         int randomNumber = new Random().nextInt(9000) + 1000;
         bill.setCode("DH"+ randomNumber);
         billsRepository.save(bill);
@@ -110,6 +113,18 @@ public class BillsService {
             }
         }
         detailsRepository.saveAll(billDetailsList);
+        if (!billResponse.getCodeDiscount().isEmpty()) {
+            Optional<DiscountCode> discountCodeOpt = discountCodeRepository.findByCode(billResponse.getCodeDiscount());
+
+            if (discountCodeOpt.isPresent()) {
+                DiscountCode discountCode = discountCodeOpt.get();
+
+                int currentUsed = discountCode.getUsedNumber() != null ? Integer.parseInt(discountCode.getUsedNumber()) : 0;
+                discountCode.setUsedNumber(String.valueOf(currentUsed + 1));
+
+                discountCodeRepository.save(discountCode);
+            }
+        }
         return bill;
     }
 

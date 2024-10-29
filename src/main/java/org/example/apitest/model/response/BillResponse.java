@@ -37,4 +37,10 @@ public class BillResponse {
     @NotNull
     @NotEmpty
     private String totalPrice;
+    @NotNull
+    @NotEmpty
+    private String codeDiscount;
+    @NotNull
+    @NotEmpty
+    private String discountedAmount;
 }

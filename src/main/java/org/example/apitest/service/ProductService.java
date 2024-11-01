@@ -201,7 +201,7 @@ public class ProductService {
         List<Product> products = productRepository.findByCategoryIdAndNotId(category.getId(), product.getId(), pageable);
 
         return products.stream()
-                .map(p -> new Product(p.getId(), p.getName(), p.getCreator(), p.getDescription(), p.getDetail(), p.getImageUrl(), p.getPrice(), p.getPriceSale(), p.getCategories()))
+                .map(p -> new Product(p.getId(), p.getCreator(), p.getDescription(), p.getDetail(), p.getName(), p.getImageUrl(), p.getPrice(), p.getPriceSale(), p.getCategories()))
                 .collect(Collectors.toList());
     }
 }

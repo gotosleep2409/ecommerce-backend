@@ -108,7 +108,7 @@ public class ProductController {
         return ResponseEntity.ok(ResponseBuilder.buildResponse(true, "Delete Product successfully", HttpStatus.OK));
     }
 
-    @GetMapping("/{productId}")
+    /*@GetMapping("/{productId}")
     public ResponseEntity<ProductResponse> getProductWithProductSizesById(
             @PathVariable Long productId) {
         List<Comments> comments = commentsRepository.findCommentByProductId(productId);
@@ -130,6 +130,14 @@ public class ProductController {
         }
         productResponse.setSizeQuantityMap(sizeQuantityMap);
         productResponse.setComments(comments);
+        List<Product> relatedProducts = productService.findRelatedProductsByCategory(product);
+        productResponse.setRelatedTo(relatedProducts);
+        return ResponseEntity.ok(productResponse);
+    }*/
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductResponse> getProductWithProductSizesById(@PathVariable Long productId) {
+        ProductResponse productResponse = productService.getProductWithProductSizesById(productId);
         return ResponseEntity.ok(productResponse);
     }
 

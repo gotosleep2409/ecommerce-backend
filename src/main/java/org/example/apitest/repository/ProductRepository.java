@@ -9,6 +9,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,4 +25,7 @@ public interface ProductRepository extends PagingAndSortingRepository<Product, L
     Product findProductWithProductSizesById(@Param("productId") Long productId);
 
     Page<Product> findByCategoriesId(Long categoryId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE :categoryId IN (SELECT c.id FROM p.categories c) AND p.id <> :productId")
+    List<Product> findByCategoryIdAndNotId(@Param("categoryId") Long categoryId, @Param("productId") Long productId, Pageable pageable);
 }

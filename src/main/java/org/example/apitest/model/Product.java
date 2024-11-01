@@ -66,4 +66,16 @@ public class Product {
         this.priceSale = priceSale;
         this.categories = categories;
     }
+
+    public Product(Long id, String creator, String description, String detail, String name, String imageUrl, String price, String priceSale, List<Category> categories) {
+        this.id = id;
+        this.name = name;
+        this.creator = creator;
+        this.description = description;
+        this.detail = detail;
+        this.imageUrl = imageUrl;
+        this.price = price;
+        this.priceSale = priceSale;
+        this.categories = categories;
+    }
 }

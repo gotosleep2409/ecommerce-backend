@@ -1,6 +1,9 @@
 package org.example.apitest.service;
 
 import lombok.AllArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.apitest.config.Config;
 import org.example.apitest.exception.ApiException;
 import org.example.apitest.model.*;
@@ -21,6 +24,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -405,5 +410,99 @@ public class BillsService {
 
         Collections.reverse(days);
         return days;
+    }
+
+    public byte[] generateExcelFile(Long billId) {
+        Bills bill = billsRepository.findById(billId)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy hóa đơn với ID: " + billId));
+
+        List<BillDetails> billDetailsList = detailsRepository.findBillDetailsByBillId(billId);
+
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Hoá đơn " + bill.getCode());
+
+            // Thiết lập font và style cho tiêu đề
+            Font titleFont = workbook.createFont();
+            titleFont.setFontHeightInPoints((short) 16);
+            titleFont.setBold(true);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+
+            Row shopTitleRow = sheet.createRow(0);
+            Cell shopTitleCell = shopTitleRow.createCell(0);
+            shopTitleCell.setCellValue("Shop Nghiện Bóng Đá");
+            shopTitleCell.setCellStyle(titleStyle);
+
+            Row orderTitleRow = sheet.createRow(1);
+            Cell orderTitleCell = orderTitleRow.createCell(0);
+            orderTitleCell.setCellValue("Đơn hàng " + bill.getCode());
+            orderTitleCell.setCellStyle(titleStyle);
+
+            // Merge các cột để tiêu đề căn giữa
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 3));
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 3));
+
+            // Tạo hàng trống sau tiêu đề
+            sheet.createRow(2);
+
+            Row recipientRow = sheet.createRow(3);
+            recipientRow.createCell(0).setCellValue("Tên người nhận:");
+            recipientRow.createCell(1).setCellValue(bill.getName());
+
+            Row phoneRow = sheet.createRow(4);
+            phoneRow.createCell(0).setCellValue("Số điện thoại:");
+            phoneRow.createCell(1).setCellValue(bill.getPhoneNumber());
+
+            Row addressRow = sheet.createRow(5);
+            addressRow.createCell(0).setCellValue("Địa chỉ:");
+            addressRow.createCell(1).setCellValue(bill.getShoppingAddress());
+
+            Row paymentMethodRow = sheet.createRow(6);
+            paymentMethodRow.createCell(0).setCellValue("Phương thức thanh toán:");
+            paymentMethodRow.createCell(1).setCellValue(bill.getPaymentMethod());
+
+            Row printTimeRow = sheet.createRow(7);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            printTimeRow.createCell(0).setCellValue("Thời gian: ");
+            printTimeRow.createCell(1).setCellValue(dateFormat.format(new Date()));
+
+            Row headerRow = sheet.createRow(8);
+            headerRow.createCell(0).setCellValue("Tên Sản Phẩm");
+            headerRow.createCell(1).setCellValue("Số Lượng");
+            headerRow.createCell(2).setCellValue("Giá Đơn Vị");
+            headerRow.createCell(3).setCellValue("Thành Tiền");
+
+            sheet.setColumnWidth(0, 30 * 256);
+            sheet.setColumnWidth(1, 15 * 256);
+            sheet.setColumnWidth(2, 15 * 256);
+            sheet.setColumnWidth(3, 20 * 256);
+
+            int rowIndex = 9;
+            for (BillDetails detail : billDetailsList) {
+                Row row = sheet.createRow(rowIndex++);
+                row.createCell(0).setCellValue(detail.getProduct().getName());
+                row.createCell(1).setCellValue(detail.getQuantity());
+                row.createCell(2).setCellValue(detail.getUnitPrice());
+
+                double thanhTien = detail.getQuantity() * Double.parseDouble(detail.getUnitPrice());
+                row.createCell(3).setCellValue(thanhTien);
+            }
+
+            Row totalRow = sheet.createRow(rowIndex++);
+            totalRow.createCell(2).setCellValue("Tổng cộng:");
+            totalRow.createCell(3).setCellValue(Double.parseDouble(bill.getTotalAmount()));
+
+            Row discountRow = sheet.createRow(rowIndex++);
+            discountRow.createCell(2).setCellValue("Số tiền giảm giá:");
+            discountRow.createCell(3).setCellValue(Double.parseDouble(bill.getDiscountedAmount()));
+
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Error while exporting data to Excel", e);
+        }
     }
 }

@@ -153,7 +153,6 @@ public class ProductService {
                 cell.setCellValue(columns[i]);
             }
 
-            // Điền dữ liệu sản phẩm và số lượng theo size
             int rowNum = 1;
             for (Product product : productList) {
                 for (ProductSize productSize : product.getProductSizes()) {

@@ -11,7 +11,9 @@ import org.example.apitest.model.response.BillResponse;
 import org.example.apitest.service.BillsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -100,5 +102,18 @@ public class BillController {
             return ResponseEntity.ok(ResponseBuilder.buildResponse(data, "Get data successfully", HttpStatus.OK));
         }
         return ResponseEntity.ok(ResponseBuilder.buildResponse(null, "Get data successfully", HttpStatus.BAD_REQUEST));
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportBillExcel(@RequestParam("billId") Long billId) {
+        byte[] excelData = billService.generateExcelFile(billId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "bill_" + billId + ".xlsx");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(excelData);
     }
 }

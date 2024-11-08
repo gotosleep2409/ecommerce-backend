@@ -17,7 +17,7 @@ import java.util.List;
 public class ResponseBuilder<T> {
 	private int code;
 	private String message;
-	private int pgtVersionCode;
+	/*private int pgtVersionCode;
 	private int pgtQuestionCount;
 	private int pgtFreeMsgCount;
 	private int pgtFreeMsgCountPerDay;
@@ -26,7 +26,7 @@ public class ResponseBuilder<T> {
 	private boolean pgtAllowFreeMsgPerDay;
 	private long pgtFreeMsgResetAt;
 	private String pgtMd;
-	private List<String> gptIapPackages;
+	private List<String> gptIapPackages;*/
 	private T data;
 	
 	public static <K> ResponseBuilder<K> buildResponse(K data) {

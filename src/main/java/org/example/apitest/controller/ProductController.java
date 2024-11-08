@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.apitest.exception.ApiException;
 import org.example.apitest.helper.ResponseBuilder;
-import org.example.apitest.model.Comments;
 import org.example.apitest.model.Product;
 import org.example.apitest.model.ProductSize;
 import org.example.apitest.model.Size;
@@ -155,4 +154,9 @@ public class ProductController {
                 .body(excelData);
     }
 
+    @GetMapping("/chart-top-products-by-stock")
+    public ResponseEntity<ResponseBuilder<Map<String, List<?>>>> getTop10ProductByStock() {
+        Map<String, List<?>> data = productService.getTop10ProductsByStock();
+        return ResponseEntity.ok(ResponseBuilder.buildResponse(data, "Get data successfully", HttpStatus.OK));
+    }
 }

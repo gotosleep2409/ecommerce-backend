@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.Map;
 
 
@@ -102,6 +103,24 @@ public class BillController {
             return ResponseEntity.ok(ResponseBuilder.buildResponse(data, "Get data successfully", HttpStatus.OK));
         }
         return ResponseEntity.ok(ResponseBuilder.buildResponse(null, "Get data successfully", HttpStatus.BAD_REQUEST));
+    }
+
+    @GetMapping("/chart-turnover-data")
+    public ResponseEntity<ResponseBuilder<Map<String, Object>>> getChartTurnoverData(@RequestParam String period) {
+        if ("Month".equalsIgnoreCase(period)) {
+            Map<String, Object> data = billService.getLast12MonthsTurnover();
+            return ResponseEntity.ok(ResponseBuilder.buildResponse(data, "Get data successfully", HttpStatus.OK));
+        }else if ("day".equalsIgnoreCase(period)) {
+            Map<String, Object> data = billService.getLastWeekTurnover();
+            return ResponseEntity.ok(ResponseBuilder.buildResponse(data, "Get data successfully", HttpStatus.OK));
+        }
+        return ResponseEntity.ok(ResponseBuilder.buildResponse(null, "Get data successfully", HttpStatus.BAD_REQUEST));
+    }
+
+    @GetMapping("/chart-top10-products")
+    public ResponseEntity<ResponseBuilder<Map<String, List<?>>>> getTop10BestSellingProducts() {
+        Map<String, List<?>> data = billService.getTop10BestSellingProducts();
+        return ResponseEntity.ok(ResponseBuilder.buildResponse(data, "Get data successfully", HttpStatus.OK));
     }
 
     @GetMapping("/export")

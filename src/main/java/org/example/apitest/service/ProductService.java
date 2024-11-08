@@ -204,4 +204,23 @@ public class ProductService {
                 .map(p -> new Product(p.getId(), p.getCreator(), p.getDescription(), p.getDetail(), p.getName(), p.getImageUrl(), p.getPrice(), p.getPriceSale(), p.getCategories()))
                 .collect(Collectors.toList());
     }
+
+    public Map<String, List<?>> getTop10ProductsByStock() {
+        List<Object[]> results = productSizeRepository.findTop10ProductsByStock(PageRequest.of(0, 10));
+        List<String> productNames = new ArrayList<>();
+        List<Integer> stockQuantities = new ArrayList<>();
+
+        for (Object[] result : results) {
+            String productName = (String) result[0];
+            Integer totalQuantity = ((Long) result[1]).intValue();
+
+            productNames.add(productName);
+            stockQuantities.add(totalQuantity);
+        }
+
+        Map<String, List<?>> response = new HashMap<>();
+        response.put("productNames", productNames);
+        response.put("stockQuantities", stockQuantities);
+        return response;
+    }
 }

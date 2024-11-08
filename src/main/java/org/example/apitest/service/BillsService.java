@@ -398,6 +398,144 @@ public class BillsService {
         return result;
     }
 
+    public Map<String, Object> getLastWeekTurnover() {
+        Date endDate = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(endDate);
+        calendar.add(Calendar.DAY_OF_YEAR, -6);
+        Date startDate = calendar.getTime();
+
+        List<Bills> bills = billsRepository.findAllByDateRange(startDate, endDate);
+
+        Map<String, Double> totalOrderValues = new HashMap<>();
+        Map<String, Integer> successfulOrders = new HashMap<>();
+        Map<String, Integer> canceledOrders = new HashMap<>();
+
+        List<String> days = getLast7Days();
+        for (String day : days) {
+            totalOrderValues.put(day, 0.0);
+            successfulOrders.put(day, 0);
+            canceledOrders.put(day, 0);
+        }
+
+        SimpleDateFormat dayFormat = new SimpleDateFormat("dd/MM");
+        SimpleDateFormat weekDayFormat = new SimpleDateFormat("EEEE", Locale.ENGLISH);
+
+        for (Bills bill : bills) {
+            String billDay = dayFormat.format(bill.getDate());
+
+            if (totalOrderValues.containsKey(billDay)) {
+                double totalAmount = Double.parseDouble(bill.getTotalAmount());
+                totalOrderValues.put(billDay, totalOrderValues.get(billDay) + totalAmount);
+
+                if ("Đã giao hàng".equalsIgnoreCase(bill.getStatus())) {
+                    successfulOrders.put(billDay, successfulOrders.get(billDay) + 1);
+                } else if ("Đơn hàng hủy".equalsIgnoreCase(bill.getStatus())) {
+                    canceledOrders.put(billDay, canceledOrders.get(billDay) + 1);
+                }
+            }
+        }
+
+        List<Integer> totalOrderValuesList = days.stream()
+                .map(day -> (int)Math.round(totalOrderValues.get(day)))
+                .collect(Collectors.toList());
+
+        List<Integer> successfulOrdersList = days.stream().map(successfulOrders::get).collect(Collectors.toList());
+        List<Integer> canceledOrdersList = days.stream().map(canceledOrders::get).collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("period", "Day");
+        result.put("labels", days);
+        result.put("datasets", Arrays.asList(
+                new BillReportRequest("Tổng giá trị đơn hàng", totalOrderValuesList),
+                new BillReportRequest("Đơn hàng thành công", successfulOrdersList),
+                new BillReportRequest("Đơn hàng hủy", canceledOrdersList)
+        ));
+
+        return result;
+    }
+
+    public Map<String, Object> getLast12MonthsTurnover() {
+        Calendar calendar = Calendar.getInstance();
+        Date endDate = calendar.getTime();
+        calendar.add(Calendar.MONTH, -11);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        Date startDate = calendar.getTime();
+
+        List<Bills> bills = billsRepository.findAllByDateRange(startDate, endDate);
+
+        Map<String, Double> totalTurnover = new HashMap<>();
+        Map<String, Integer> successfulOrders = new HashMap<>();
+        Map<String, Integer> canceledOrders = new HashMap<>();
+
+        List<String> months = new ArrayList<>();
+        calendar.setTime(startDate);
+        for (int i = 0; i < 12; i++) {
+            String monthName = String.format("%1$tB %1$tY", calendar.getTime());
+            months.add(monthName);
+            totalTurnover.put(monthName, 0.0);
+            successfulOrders.put(monthName, 0);
+            canceledOrders.put(monthName, 0);
+            calendar.add(Calendar.MONTH, 1);
+        }
+
+        for (Bills bill : bills) {
+            Calendar billCalendar = Calendar.getInstance();
+            billCalendar.setTime(bill.getDate());
+            String monthName = String.format("%1$tB %1$tY", billCalendar.getTime());
+
+            if (totalTurnover.containsKey(monthName)) {
+                if (bill.getTotalAmount() != null && !bill.getTotalAmount().trim().isEmpty()) {
+                    double billAmount = Double.parseDouble(bill.getTotalAmount().trim());
+                    totalTurnover.put(monthName, totalTurnover.get(monthName) + billAmount);
+                }
+
+                if ("Đã giao hàng".equalsIgnoreCase(bill.getStatus())) {
+                    successfulOrders.put(monthName, successfulOrders.get(monthName) + 1);
+                }
+                if ("Đơn hàng hủy".equalsIgnoreCase(bill.getStatus())) {
+                    canceledOrders.put(monthName, canceledOrders.get(monthName) + 1);
+                }
+            }
+        }
+
+        List<Double> totalTurnoverList = months.stream().map(totalTurnover::get).collect(Collectors.toList());
+        List<Integer> totalTurnoverListInt = totalTurnoverList.stream().map(Double::intValue).collect(Collectors.toList());
+        List<Integer> successfulOrdersList = months.stream().map(successfulOrders::get).collect(Collectors.toList());
+        List<Integer> canceledOrdersList = months.stream().map(canceledOrders::get).collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("period", "Month");
+        result.put("labels", months);
+        result.put("datasets", Arrays.asList(
+                new BillReportRequest("Tổng doanh thu", totalTurnoverListInt),
+                new BillReportRequest("Đơn hàng thành công", successfulOrdersList),
+                new BillReportRequest("Đơn hàng hủy", canceledOrdersList)
+        ));
+
+        return result;
+    }
+
+    //Top 10 Product
+    public Map<String, List<?>> getTop10BestSellingProducts() {
+        List<Object[]> results = detailsRepository.findTop10BestSellingProducts();
+        List<String> productNames = results.stream()
+                .map(result -> (String) result[0])
+                .limit(10)
+                .collect(Collectors.toList());
+
+        List<Long> quantities = results.stream()
+                .map(result -> (Long) result[1])
+                .limit(10)
+                .collect(Collectors.toList());
+
+        Map<String, List<?>> response = new HashMap<>();
+        response.put("productNames", productNames);
+        response.put("quantities", quantities);
+
+        return response;
+    }
+
     private List<String> getLast7Days() {
         List<String> days = new ArrayList<>();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM");

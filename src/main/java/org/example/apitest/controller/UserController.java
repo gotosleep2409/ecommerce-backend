@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.apitest.dto.JWTTokenDto;
 import org.example.apitest.dto.LoginRequestDto;
 import org.example.apitest.exception.ApiException;
+import org.example.apitest.exception.ErrorMessage;
 import org.example.apitest.helper.ResponseBuilder;
 import org.example.apitest.model.User;
 import org.example.apitest.model.request.RegisterRequest;
@@ -25,12 +26,18 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class UserController {
     private final UserService userService;
-
+    
     @PostMapping("/login")
-    public ResponseEntity<JWTTokenDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto) throws ApiException {
-        JWTTokenDto jwtTokenDto = userService.login(loginRequestDto);
-        return ResponseEntity.ok(jwtTokenDto);
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDto loginRequestDto) {
+        try {
+            JWTTokenDto token = userService.login(loginRequestDto);
+            return ResponseEntity.ok(token);
+        } catch (ApiException ex) {
+            ErrorMessage errorResponse = ErrorMessage.CANNOT_LOGIN;
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        }
     }
+
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequest registerRequest) throws ApiException {
         userService.register(registerRequest);

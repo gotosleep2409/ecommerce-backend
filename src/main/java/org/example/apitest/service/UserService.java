@@ -41,8 +41,8 @@ public class UserService {
         }
         return jwtTokenProvider.generateJWTTokenForUser(new AdminUser("1", username, password)); */
         User user = userRepository.findByUsername(username);
-        if (user == null || !password.equals(user.getPassword())) {
-            throw new ApiException(ErrorMessage.CANNOT_LOGIN);
+        if (user == null || !password.equals(user.getPassword()) || !user.isEnabled()) {
+            throw new ApiException("Cannot login. Invalid credentials or account not enabled.");
         }
         return jwtTokenProvider.generateJWTTokenForUser(user);
     }

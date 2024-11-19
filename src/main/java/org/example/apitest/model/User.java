@@ -86,7 +86,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
     public User(String name, String username, String password, String role, Long phone, String email, String verificationCode){
         this.name = name;

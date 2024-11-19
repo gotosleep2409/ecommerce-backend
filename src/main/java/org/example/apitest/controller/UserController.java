@@ -16,6 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -28,11 +31,28 @@ public class UserController {
         JWTTokenDto jwtTokenDto = userService.login(loginRequestDto);
         return ResponseEntity.ok(jwtTokenDto);
     }
-
     @PostMapping("/register")
-    public ResponseEntity<ResponseBuilder<User>> register(@Valid @RequestBody RegisterRequest registerRequest) throws ApiException{
-        User user = userService.register(registerRequest);
-        return ResponseEntity.ok(ResponseBuilder.buildResponse(user, "Register user successfully", HttpStatus.OK));
+    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequest registerRequest) throws ApiException {
+        userService.register(registerRequest);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Vui lòng kiểm tra email để xác thực tài khoản.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<Map<String, String>> verifyEmail(@RequestParam("code") String code) {
+        boolean verified = userService.verifyEmail(code);
+        Map<String, String> response = new HashMap<>();
+
+        if (verified) {
+            response.put("message", "Xác thực email thành công!");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("message", "Mã xác thực không hợp lệ.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
 
     @GetMapping("/list")

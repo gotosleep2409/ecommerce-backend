@@ -12,13 +12,17 @@ import org.example.apitest.model.request.UserRequest;
 import org.example.apitest.model.request.changeUserPasswordRequest;
 import org.example.apitest.repository.UserRepository;
 import org.example.apitest.util.BeanUtilsAdvanced;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Service
@@ -26,6 +30,8 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    @Autowired
+    private JavaMailSender mailSender;
 
     public JWTTokenDto login(LoginRequestDto loginRequestDto) throws ApiException {
         String username = loginRequestDto.getUsername();
@@ -41,13 +47,40 @@ public class UserService {
         return jwtTokenProvider.generateJWTTokenForUser(user);
     }
 
-    public User register(RegisterRequest request) throws ApiException {
+    public void sendVerificationEmail(String recipientEmail, String code) {
+        String subject = "Xác thực email của bạn";
+        String content = "Mã xác thực của bạn là: " + code + "\n\nVui lòng nhập mã này để kích hoạt tài khoản.";
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(recipientEmail);
+        message.setSubject(subject);
+        message.setText(content);
+
+        mailSender.send(message);
+    }
+
+    public void register(RegisterRequest request) throws ApiException {
         Optional<User> userOptional = userRepository.findUserByUsername(request.getUsername());
         if(userOptional.isPresent()){
             throw new ApiException("Username existed=" + request.getUsername());
         }
-        User userRegister = new User(request.getName(), request.getUsername(), encodePassword(request.getPassword()),"USER", request.getPhone(), request.getEmail());
-        return userRepository.save(userRegister);
+        String setVerificationCode = UUID.randomUUID().toString();
+        User userRegister = new User(request.getName(), request.getUsername(), encodePassword(request.getPassword()),"USER", request.getPhone(), request.getEmail(), setVerificationCode);
+        userRepository.save(userRegister);
+        sendVerificationEmail(userRegister.getEmail(), userRegister.getVerificationCode());
+    }
+
+    public boolean verifyEmail(String code) {
+        Optional<User> userOptional = userRepository.findByVerificationCode(code);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setEnabled(true);
+            user.setVerificationCode(null);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
     }
 
     public static String encodePassword(String plainPassword) {

@@ -59,6 +59,11 @@ public class User implements UserDetails {
 
     private String role;
 
+    @Column(unique = true)
+    private String verificationCode;
+
+    private boolean enabled = false;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role));
@@ -83,12 +88,13 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-    public User(String name, String username, String password, String role, Long phone, String email){
+    public User(String name, String username, String password, String role, Long phone, String email, String verificationCode){
         this.name = name;
         this.username = username;
         this.password = password;
         this.role = role;
         this.phone = phone;
         this.email = email;
+        this.verificationCode = verificationCode;
     }
 }

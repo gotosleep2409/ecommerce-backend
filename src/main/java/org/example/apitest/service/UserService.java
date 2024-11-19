@@ -76,7 +76,6 @@ public class UserService {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             user.setEnabled(true);
-            user.setVerificationCode(null);
             userRepository.save(user);
             return true;
         }

@@ -32,6 +32,8 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     @Autowired
     private JavaMailSender mailSender;
+    @Autowired
+    private EmailService emailService;
 
     public JWTTokenDto login(LoginRequestDto loginRequestDto) throws ApiException {
         String username = loginRequestDto.getUsername();
@@ -46,6 +48,24 @@ public class UserService {
         }
         return jwtTokenProvider.generateJWTTokenForUser(user);
     }
+
+    public boolean resetPassword(String username, String email) {
+        User user = userRepository.findByUsername(username);
+
+        if (user == null || !user.getEmail().equals(email) ||!user.isEnabled()) {
+            return false;
+        }
+
+        String defaultPassword = "123456";
+        user.setPassword(encodePassword(defaultPassword));
+        userRepository.save(user);
+
+        String subject = "Đặt lại mật khẩu thành công";
+        String message = "Mật khẩu mới của bạn là: " + defaultPassword;
+        emailService.sendEmail(email, subject, message);
+        return true;
+    }
+
 
     public void sendVerificationEmail(String recipientEmail, String code) {
         String subject = "Xác thực email của bạn";

@@ -26,7 +26,7 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class UserController {
     private final UserService userService;
-    
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDto loginRequestDto) {
         try {
@@ -59,6 +59,23 @@ public class UserController {
         } else {
             response.put("message", "Mã xác thực không hợp lệ.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> request) {
+        String username = request.get("username");
+        String email = request.get("email");
+
+        boolean isReset = userService.resetPassword(username, email);
+        if (isReset) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Mật khẩu mới đã được gửi tới email của bạn.");
+            return ResponseEntity.ok(response);
+        } else {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Tên tài khoản và email không tồn tại.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
 

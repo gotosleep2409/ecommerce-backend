@@ -28,4 +28,16 @@ public interface ProductRepository extends PagingAndSortingRepository<Product, L
 
     @Query("SELECT p FROM Product p WHERE :categoryId IN (SELECT c.id FROM p.categories c) AND p.id <> :productId")
     List<Product> findByCategoryIdAndNotId(@Param("categoryId") Long categoryId, @Param("productId") Long productId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p " +
+            "JOIN p.categories c " +
+            "WHERE (:from IS NULL OR CAST(p.price AS long) >= :from) " +
+            "AND (:to IS NULL OR CAST(p.price AS long) <= :to) " +
+            "AND (:category IS NULL OR c.id = :category) " +
+            "AND (:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Product> findProductsWithFilters(@Param("from") Long from,
+                                          @Param("to") Long to,
+                                          @Param("category") Long category,
+                                          @Param("search") String search,
+                                          Pageable pageable);
 }

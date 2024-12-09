@@ -73,6 +73,39 @@ public class ProductController {
         return ResponseEntity.ok(ResponseBuilder.buildResponse(productRequestsPage, "Get list Products successfully", HttpStatus.OK));
     }
 
+    @GetMapping("/list-for-home-page")
+    public ResponseEntity<ResponseBuilder<Page<ProductResponse>>> getPageProductsForHomePage(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(required = false) Long from,
+            @RequestParam(required = false) Long to,
+            @RequestParam(required = false) Long category,
+            @RequestParam(required = false) String search) {
+        Page<Product> productsPage = productService.listForHomePage(page, size, from, to, category, search);
+
+        Page<ProductResponse> productRequestsPage = productsPage.map(product -> {
+            ProductResponse productResponse = new ProductResponse();
+            productResponse.setId(product.getId());
+            productResponse.setName(product.getName());
+            productResponse.setCreator(product.getCreator());
+            productResponse.setDescription(product.getDescription());
+            productResponse.setDetail(product.getDetail());
+            productResponse.setImageUrl(product.getImageUrl());
+            productResponse.setPrice(product.getPrice());
+            productResponse.setPriceSale(product.getPriceSale());
+            productResponse.setCategories(product.getCategories());
+
+            Map<String, Integer> sizeQuantityMap = new HashMap<>();
+            for (ProductSize productSize : product.getProductSizes()) {
+                sizeQuantityMap.put(productSize.getSize().getName(), productSize.getQuantity());
+            }
+
+            productResponse.setSizeQuantityMap(sizeQuantityMap);
+            return productResponse;
+        });
+        return ResponseEntity.ok(ResponseBuilder.buildResponse(productRequestsPage, "Get list Products successfully", HttpStatus.OK));
+    }
+
 
     @PostMapping("/create")
     public ResponseEntity<ResponseBuilder<Product>> createProduct(@Valid @RequestBody ProductRequest productsRequest) throws ApiException{

@@ -223,4 +223,9 @@ public class ProductService {
         response.put("stockQuantities", stockQuantities);
         return response;
     }
+
+    public Page<Product> listForHomePage(int page, int size, Long from, Long to, Long category, String search) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
+        return productRepository.findProductsWithFilters(from, to, category, search, pageable);
+    }
 }

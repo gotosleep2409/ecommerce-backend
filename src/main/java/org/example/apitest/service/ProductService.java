@@ -49,7 +49,7 @@ public class ProductService {
             throw new ApiException("Not found Categories");
         }
 
-        Product productToCreate = new Product(request.getName(), request.getCreator(), request.getDescription(), request.getDetail(), request.getImageUrl(), request.getPrice(), request.getPriceSale(), categories);
+        Product productToCreate = new Product(request.getName(), request.getCreator(), request.getDescription(), request.getDetail(), request.getImageUrl(), request.getPrice(), request.getPriceSale(), categories, request.getFeatured());
 
         Product savedProduct = productRepository.save(productToCreate);
 
@@ -79,7 +79,7 @@ public class ProductService {
             throw new ApiException("Not found Categories with CategoryIds body request");
         }
 
-        Product productRequest = new Product(request.getName(), request.getCreator(), request.getDescription(), request.getDetail(), request.getImageUrl(), request.getPrice(), request.getPriceSale(), categories);
+        Product productRequest = new Product(request.getName(), request.getCreator(), request.getDescription(), request.getDetail(), request.getImageUrl(), request.getPrice(), request.getPriceSale(), categories,request.getFeatured());
 
         Product productToUpdate = productExisted.get();
 
@@ -201,7 +201,7 @@ public class ProductService {
         List<Product> products = productRepository.findByCategoryIdAndNotId(category.getId(), product.getId(), pageable);
 
         return products.stream()
-                .map(p -> new Product(p.getId(), p.getCreator(), p.getDescription(), p.getDetail(), p.getName(), p.getImageUrl(), p.getPrice(), p.getPriceSale(), p.getCategories()))
+                .map(p -> new Product(p.getId(), p.getCreator(), p.getDescription(), p.getDetail(), p.getName(), p.getImageUrl(), p.getPrice(), p.getPriceSale(), p.getCategories(), p.getFeatured()))
                 .collect(Collectors.toList());
     }
 
@@ -227,5 +227,10 @@ public class ProductService {
     public Page<Product> listForHomePage(int page, int size, Long from, Long to, Long category, String search) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
         return productRepository.findProductsWithFilters(from, to, category, search, pageable);
+    }
+
+    public List<Product> getFeaturedProducts() {
+        Pageable limit = PageRequest.of(0, 4);
+        return productRepository.findByFeaturedTrue(limit);
     }
 }

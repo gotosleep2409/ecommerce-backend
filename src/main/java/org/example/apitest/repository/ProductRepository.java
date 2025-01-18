@@ -40,4 +40,7 @@ public interface ProductRepository extends PagingAndSortingRepository<Product, L
                                           @Param("category") Long category,
                                           @Param("search") String search,
                                           Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.featured = true")
+    List<Product> findByFeaturedTrue(Pageable pageable);
 }

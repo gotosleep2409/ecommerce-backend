@@ -41,6 +41,9 @@ public class Product {
     @Column(name = "priceSale")
     private String priceSale;
 
+    @Column(name="featured")
+    private Boolean featured;
+
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
@@ -56,7 +59,7 @@ public class Product {
     @Transient
     private List<Comments> comments;
 
-    public Product(String name, String creator, String description, String detail, String imageUrl, String price, String priceSale, List<Category> categories) {
+    public Product(String name, String creator, String description, String detail, String imageUrl, String price, String priceSale, List<Category> categories, Boolean featured) {
         this.name = name;
         this.creator = creator;
         this.description = description;
@@ -65,9 +68,10 @@ public class Product {
         this.price = price;
         this.priceSale = priceSale;
         this.categories = categories;
+        this.featured = featured;
     }
 
-    public Product(Long id, String creator, String description, String detail, String name, String imageUrl, String price, String priceSale, List<Category> categories) {
+    public Product(Long id, String creator, String description, String detail, String name, String imageUrl, String price, String priceSale, List<Category> categories, Boolean featured) {
         this.id = id;
         this.name = name;
         this.creator = creator;
@@ -77,5 +81,6 @@ public class Product {
         this.price = price;
         this.priceSale = priceSale;
         this.categories = categories;
+        this.featured = featured;
     }
 }

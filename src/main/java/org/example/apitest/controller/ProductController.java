@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/products")
@@ -192,4 +193,38 @@ public class ProductController {
         Map<String, List<?>> data = productService.getTop10ProductsByStock();
         return ResponseEntity.ok(ResponseBuilder.buildResponse(data, "Get data successfully", HttpStatus.OK));
     }
+
+    @GetMapping("/featured-products")
+    public ResponseEntity<ResponseBuilder<List<ProductResponse>>> getFeaturedProducts() {
+        List<Product> featuredProducts = productService.getFeaturedProducts();
+
+        List<ProductResponse> productResponses = featuredProducts.stream().map(product -> {
+            ProductResponse productResponse = new ProductResponse();
+            productResponse.setId(product.getId());
+            productResponse.setName(product.getName());
+            productResponse.setCreator(product.getCreator());
+            productResponse.setDescription(product.getDescription());
+            productResponse.setDetail(product.getDetail());
+            productResponse.setImageUrl(product.getImageUrl());
+            productResponse.setPrice(product.getPrice());
+            productResponse.setPriceSale(product.getPriceSale());
+            productResponse.setCategories(product.getCategories());
+            productResponse.setComments(product.getComments());
+
+            Map<String, Integer> sizeQuantityMap = new HashMap<>();
+            for (ProductSize productSize : product.getProductSizes()) {
+                sizeQuantityMap.put(productSize.getSize().getName(), productSize.getQuantity());
+            }
+            productResponse.setSizeQuantityMap(sizeQuantityMap);
+
+            return productResponse;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(ResponseBuilder.buildResponse(
+                productResponses,
+                "Get featured products successfully",
+                HttpStatus.OK
+        ));
+    }
+
 }

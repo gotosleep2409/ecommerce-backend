@@ -60,6 +60,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements WebM
                 .antMatchers(HttpMethod.POST,"/users").permitAll()
                 .antMatchers("/image/**").permitAll()
                 .antMatchers("/image**").permitAll()
+                .antMatchers("/faq/**").permitAll()
+                .antMatchers("/faq/**").permitAll()
+                .antMatchers("/chatbot/**").permitAll()
                 .anyRequest().authenticated();
 
         http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);

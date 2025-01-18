@@ -39,5 +39,6 @@ public class ProductRequest {
     private List<Long> categories;
     @NotNull
     private Map<String, Integer> sizeQuantityMap;
+    private Boolean featured;
 }
 
